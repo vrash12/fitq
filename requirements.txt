@@ -1,0 +1,15 @@
+Flask>=2.3
+flask-jwt-extended>=4.6
+Flask-SQLAlchemy>=3.1
+SQLAlchemy>=2.0
+Flask-Cors>=4.0
+
+Werkzeug>=2.3
+
+# Pose / CV
+numpy<2.0
+opencv-python-headless>=4.8
+mediapipe>=0.10.0
+
+# If you really use face recognition in auth (selfie verify), keep these:
+face-recognition>=1.3.0
