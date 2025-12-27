@@ -30,8 +30,6 @@ RUN which cmake && cmake --version
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     && python -m pip install --no-cache-dir cmake ninja \
     && which cmake && cmake --version
-
-# --- Install requirements ---
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
