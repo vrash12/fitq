@@ -24,9 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # --- Hard check: fail early if cmake is missing ---
 RUN which cmake && cmake --version
 
-# --- Python tooling ---
-# Install pip/setuptools/wheel first (dlib needs wheel builds)
-# ALSO install pip's cmake/ninja to guarantee cmake exists in /usr/local/bin
+# --
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     && python -m pip install --no-cache-dir cmake ninja \
     && which cmake && cmake --version
