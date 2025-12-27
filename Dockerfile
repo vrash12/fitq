@@ -1,31 +1,43 @@
-# Use a slim Python image
+# Dockerfile
 FROM python:3.11-slim
 
-# Prevent Python from writing .pyc files and buffer logs
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
-# Cloud Run sets PORT (usually 8080)
 ENV PORT=8080
 
 WORKDIR /app
 
-# (Optional) If you use packages that need compilation (psycopg2, etc.)
-# uncomment these:
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     build-essential gcc \
-#     && rm -rf /var/lib/apt/lists/*
+# --- System deps (build + runtime) ---
+# build-essential/g++ = compile dlib
+# cmake + ninja-build = build system
+# libgl1/libglib2.0-0 = common runtime deps for opencv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    build-essential \
+    gcc \
+    g++ \
+    cmake \
+    ninja-build \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies first (better layer caching)
+# --- Hard check: fail early if cmake is missing ---
+RUN which cmake && cmake --version
+
+# --- Python tooling ---
+# Install pip/setuptools/wheel first (dlib needs wheel builds)
+# ALSO install pip's cmake/ninja to guarantee cmake exists in /usr/local/bin
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && python -m pip install --no-cache-dir cmake ninja \
+    && which cmake && cmake --version
+
+# --- Install requirements ---
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the backend code (including app/, wsgi.py, config.py, etc.)
+# --- App code ---
 COPY . /app
 
-# Cloud Run listens on 8080 by default
 EXPOSE 8080
 
-# Run with Gunicorn (production server)
-# If you want more workers, you can tune (2-4) depending on CPU/memory
 CMD exec gunicorn --bind :$PORT --workers 2 --threads 8 --timeout 0 wsgi:app
