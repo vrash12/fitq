@@ -3,6 +3,6 @@ flask-jwt-extended>=4.6
 Flask-SQLAlchemy>=3.1
 SQLAlchemy>=2.0
 Flask-Cors>=4.0
-
+gunicorn
 Werkzeug>=2.3
 
