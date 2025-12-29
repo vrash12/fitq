@@ -1,4 +1,4 @@
-#backend/Dockerfile
+# backend/Dockerfile
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -7,36 +7,26 @@ ENV PORT=8080
 
 WORKDIR /app
 
-# System deps for building dlib + runtime deps for opencv/mediapipe
+# Minimal runtime deps (keep only what you still need)
+# - libglib2.0-0 + libgl1 are commonly needed by opencv-python
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 \
     libglib2.0-0 \
-    build-essential \
-    gcc \
-    g++ \
-    cmake \
-    ninja-build \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade Python build tooling (do NOT install pip's cmake)
+# Upgrade pip tooling
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# If a pip-shim cmake exists for any reason, remove it so /usr/bin/cmake is used
-RUN rm -f /usr/local/bin/cmake /usr/local/bin/ninja || true
-
-# Force PATH to prefer system binaries (cmake from apt)
-ENV PATH="/usr/bin:${PATH}"
-ENV CMAKE_EXECUTABLE="/usr/bin/cmake"
-
-# Verify we are using the correct cmake
-RUN which cmake && cmake --version
-
+# Install python deps
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy app code
 COPY . /app
 
 EXPOSE 8080
+
+# Run Cloud Run (make sure backend/wsgi.py exists and exposes `app`)
 CMD exec gunicorn \
   --chdir backend \
   --bind 0.0.0.0:${PORT} \

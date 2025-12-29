@@ -79,8 +79,7 @@ def create_app():
     app.register_blueprint(rewards_bp, url_prefix="/api/rewards")
     app.register_blueprint(exercises_bp, url_prefix="/api/exercises")
 
-    # If still used by older clients:
-    app.register_blueprint(workout_pose_bp, url_prefix="/api/workout-poses")
+
 
     @app.route("/api/health")
     def health():
@@ -89,7 +88,7 @@ def create_app():
     # -----------------------------
     # DB init
     # -----------------------------
-    with app.app_context():
+    with app.app_context(): 
         db.create_all()
 
     return app
